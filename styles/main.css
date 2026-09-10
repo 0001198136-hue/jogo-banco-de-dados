@@ -133,25 +133,37 @@ button, input {
   transition: width 0.3s ease;
 }
 
-#brain {
+#mundo {
   position: relative;
   flex: 1;
+  min-height: 0;
   width: 100%;
-  max-width: 640px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12vw;
-  padding: 32px 12px;
-  touch-action: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
+/* scroll nativo é só andaime do passo 1 pra poder revisar no celular;
+   passo 2 troca isso por arrasto manual (translateX) com o boneco "andando". */
 
-.coluna {
+.mundo-chao {
   position: relative;
   z-index: 2;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  flex: 1;
+  align-items: center;
+  gap: 28px;
+  height: 100%;
+  width: max-content;
+  padding: 0 50vw; /* espaço nas pontas pra dar pra centralizar o 1º/último nó embaixo do boneco depois */
+}
+.mundo-chao .neuronio { text-align: center; width: 130px; }
+
+.mascote-mundo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .neuronio {

@@ -108,31 +108,23 @@ async function esperarSessaoComecar(sessionId) {
   });
 }
 
-function renderizarNeuronios({ perguntas, pool }) {
-  const colPerguntas = $('#coluna-perguntas');
-  const colRespostas = $('#coluna-respostas');
-  colPerguntas.innerHTML = '';
-  colRespostas.innerHTML = '';
+function renderizarMundo({ perguntas, pool }) {
+  const chao = $('#mundo-chao');
+  chao.innerHTML = '';
 
-  perguntas.forEach((p) => {
-    const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'neuronio';
-    el.dataset.id = p.id;
-    el.dataset.role = 'pergunta';
-    el.textContent = p.conceito;
-    el.style.touchAction = 'none'; // crítico: sem isso o celular tenta scrollar no meio do drag
-    colPerguntas.appendChild(el);
-  });
+  const nos = embaralhar([
+    ...perguntas.map((p) => ({ role: 'pergunta', id: p.id, texto: p.conceito })),
+    ...pool.map((r) => ({ role: 'resposta', id: r.id, texto: r.texto })),
+  ]);
 
-  pool.forEach((r) => {
-    const el = document.createElement('div');
+  nos.forEach((no) => {
+    const el = document.createElement(no.role === 'pergunta' ? 'button' : 'div');
+    if (no.role === 'pergunta') el.type = 'button';
     el.className = 'neuronio';
-    el.dataset.id = r.id;
-    el.dataset.role = 'resposta';
-    el.textContent = r.texto;
-    el.style.touchAction = 'none';
-    colRespostas.appendChild(el);
+    el.dataset.id = no.id;
+    el.dataset.role = no.role;
+    el.textContent = no.texto;
+    chao.appendChild(el);
   });
 }
 
@@ -163,11 +155,11 @@ export async function iniciarJogo() {
   onFreeze(channel, () => { congelado = true; });
 
   const pool = montarPool(perguntas, decoys);
-  renderizarNeuronios({ perguntas, pool });
+  renderizarMundo({ perguntas, pool });
   const poolPorId = new Map(pool.map((r) => [r.id, r]));
 
   const svg = $('#svg-fios');
-  const brainEl = $('#brain');
+  const mundoEl = $('#mundo');
   const mascoteEl = $('#mascote');
 
   // Troca a pose do mascote por um tempo e volta pra "parado" sozinho.
@@ -258,18 +250,20 @@ export async function iniciarJogo() {
     }
   }
 
-  const drag = criarSistemaDrag({
-    container: brainEl,
-    svg,
-    onConectar,
-    estaCongelado: () => congelado,
-  });
-
-  colunaPerguntasEls().forEach((el) => {
-    el.addEventListener('pointerdown', drag.iniciar(el, el.dataset.id));
-  });
-
-  function colunaPerguntasEls() {
-    return Array.from(document.querySelectorAll('.neuronio[data-role="pergunta"]'));
-  }
+  // TODO (passo 4 do modo mundo): reconectar a seleção por toque aqui,
+  // chamando onConectar(perguntaId, respostaId, perguntaEl, respostaEl)
+  // quando o jogador formar um par pelos popups em vez de arrastar.
+  //
+  // const drag = criarSistemaDrag({
+  //   container: mundoEl,
+  //   svg,
+  //   onConectar,
+  //   estaCongelado: () => congelado,
+  // });
+  // colunaPerguntasEls().forEach((el) => {
+  //   el.addEventListener('pointerdown', drag.iniciar(el, el.dataset.id));
+  // });
+  // function colunaPerguntasEls() {
+  //   return Array.from(document.querySelectorAll('.neuronio[data-role="pergunta"]'));
+  // }
 }
