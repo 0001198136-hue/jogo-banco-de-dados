@@ -11,8 +11,6 @@ import {
   criarCronometroJogador,
   formatarMMSS,
 } from './timer.js';
-import { criarSistemaDrag } from './pointerDrag.js';
-
 const $ = (sel) => document.querySelector(sel);
 
 const telas = {
@@ -161,6 +159,22 @@ export async function iniciarJogo() {
   const svg = $('#svg-fios');
   const mundoEl = $('#mundo');
   const mascoteEl = $('#mascote');
+  const cerebroEl = $('.cerebro-fundo');
+  const dicaEl = $('#dica-mundo');
+
+  function esconderDica() { dicaEl?.classList.add('escondida'); }
+  setTimeout(esconderDica, 6000);
+
+  function acenderCerebro(fracao) {
+    cerebroEl?.style.setProperty('--progresso', String(fracao));
+  }
+
+  function pingCerebro() {
+    const ping = document.createElement('div');
+    ping.className = 'sinapse-ping';
+    mundoEl.appendChild(ping);
+    ping.addEventListener('animationend', () => ping.remove());
+  }
 
   // Troca a pose do mascote por um tempo e volta pra "parado" sozinho.
   function mostrarMascote(estado, duracaoMs) {
@@ -193,6 +207,7 @@ export async function iniciarJogo() {
   function atualizarProgresso() {
     const progresso = Math.round((conectados / total) * 100);
     $('#barra-progresso').style.width = `${progresso}%`;
+    acenderCerebro(conectados / total);
     enviarProgresso(channel, player.id, progresso);
   }
 
@@ -218,6 +233,7 @@ export async function iniciarJogo() {
       .eq('id', player.id);
     enviarFinalizado(channel, player.id, tempoFinal);
     $('#tempo-final-texto').textContent = formatarMMSS(tempoFinal);
+    cerebroEl?.classList.add('cerebro-completo');
     mostrarTela('fim');
   }
 
@@ -233,6 +249,7 @@ export async function iniciarJogo() {
       desenharFioPermanente(perguntaEl, respostaEl, 'fio-certo');
       conectados += 1;
       atualizarProgresso();
+      pingCerebro();
       mostrarMascote('acerto', 650);
       if (conectados === total) finalizarJogador();
     } else {
@@ -250,20 +267,44 @@ export async function iniciarJogo() {
     }
   }
 
-  // TODO (passo 4 do modo mundo): reconectar a seleção por toque aqui,
-  // chamando onConectar(perguntaId, respostaId, perguntaEl, respostaEl)
-  // quando o jogador formar um par pelos popups em vez de arrastar.
-  //
-  // const drag = criarSistemaDrag({
-  //   container: mundoEl,
-  //   svg,
-  //   onConectar,
-  //   estaCongelado: () => congelado,
-  // });
-  // colunaPerguntasEls().forEach((el) => {
-  //   el.addEventListener('pointerdown', drag.iniciar(el, el.dataset.id));
-  // });
-  // function colunaPerguntasEls() {
-  //   return Array.from(document.querySelectorAll('.neuronio[data-role="pergunta"]'));
-  // }
+  // Seleção por toque: escolhe uma pergunta, depois toca na resposta pra ligar.
+  // (arrastar fio não funciona bem num mundo com scroll horizontal — por isso
+  // é toque-toque em vez de pointerdown/move/up.)
+  let selecionada = null;
+
+  function limparSelecao() {
+    selecionada?.el.classList.remove('neuronio-selecionado');
+    selecionada = null;
+  }
+
+  function onTocarNeuronio(el) {
+    if (congelado) return;
+    if (el.dataset.conectado === '1') return;
+    esconderDica();
+
+    if (el.dataset.role === 'pergunta') {
+      if (selecionada?.el === el) { limparSelecao(); return; } // toca de novo = desmarca
+      limparSelecao();
+      selecionada = { id: el.dataset.id, el };
+      el.classList.add('neuronio-selecionado');
+      return;
+    }
+
+    if (!selecionada) return; // precisa escolher a pergunta primeiro
+    const perguntaSalva = selecionada;
+    limparSelecao();
+    onConectar(perguntaSalva.id, el.dataset.id, perguntaSalva.el, el);
+  }
+
+  $('#mundo-chao').querySelectorAll('.neuronio').forEach((el) => {
+    el.addEventListener('click', () => onTocarNeuronio(el));
+  });
+
+  // Boneco "anda" enquanto o mundo rola (scroll horizontal por toque).
+  let scrollTimeoutId;
+  mundoEl.addEventListener('scroll', () => {
+    mascoteEl.classList.add('mascote-andando');
+    clearTimeout(scrollTimeoutId);
+    scrollTimeoutId = setTimeout(() => mascoteEl.classList.remove('mascote-andando'), 180);
+  }, { passive: true });
 }

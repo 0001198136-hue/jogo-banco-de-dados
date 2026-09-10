@@ -143,26 +143,82 @@ button, input {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  background-image: radial-gradient(circle, rgba(78, 234, 255, 0.14) 1px, transparent 1.5px);
+  background-size: 28px 28px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-#mundo::before {
-  content: '';
+#mundo::-webkit-scrollbar { display: none; }
+
+/* boneco fica parado no centro (posição absoluta = não rola com o chão);
+   é o chão (.mundo-chao) que desliza por baixo dele com o dedo, dando a
+   ilusão de que ele anda pelo mundo enquanto o jogador arrasta a tela. */
+
+.cerebro-fundo {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 260px;
-  height: 200px;
+  width: min(78vw, 460px);
+  height: auto;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse at center, rgba(78, 234, 255, 0.22), rgba(124, 92, 252, 0.12) 55%, transparent 75%);
+  z-index: 0;
+  --progresso: 0;
+  opacity: calc(0.24 + var(--progresso) * 0.6);
+  filter: drop-shadow(0 0 calc(3px + var(--progresso) * 16px) rgba(78, 234, 255, calc(0.25 + var(--progresso) * 0.55)));
   animation: mundo-cerebro-pulso 3.4s ease-in-out infinite;
-  z-index: 1;
+  transition: opacity 0.6s ease, filter 0.6s ease;
   pointer-events: none;
 }
+.cerebro-fundo.cerebro-completo { animation: mundo-cerebro-pulso 3.4s ease-in-out infinite, cerebro-flash 0.9s ease; }
+.cerebro-contorno { fill: none; stroke: var(--sinapse); stroke-width: 2; stroke-linejoin: round; }
+.cerebro-dobra { fill: none; stroke: var(--sinapse-2); stroke-width: 1.4; opacity: 0.75; }
+.cerebro-fenda { stroke: var(--surface-border); stroke-width: 1.5; }
+.cerebro-tronco { fill: none; stroke: var(--sinapse); stroke-width: 2; }
 @keyframes mundo-cerebro-pulso {
-  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.06); }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.035); }
 }
-/* scroll nativo é só andaime do passo 1 pra poder revisar no celular;
-   passo 2 troca isso por arrasto manual (translateX) com o boneco "andando". */
+@keyframes cerebro-flash {
+  0% { filter: drop-shadow(0 0 6px rgba(245, 185, 66, 0.4)); }
+  40% { filter: drop-shadow(0 0 50px rgba(245, 185, 66, 1)); transform: translate(-50%, -50%) scale(1.14); }
+  100% { filter: drop-shadow(0 0 22px rgba(245, 185, 66, 0.65)); }
+}
+
+.sinapse-ping {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--dourado);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  animation: ping-expandir 0.8s ease-out forwards;
+}
+@keyframes ping-expandir {
+  0% { width: 30px; height: 30px; opacity: 0.85; }
+  100% { width: 320px; height: 320px; opacity: 0; }
+}
+
+.dica-mundo {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  z-index: 6;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  color: var(--texto-fraco);
+  background: rgba(10, 14, 23, 0.8);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-border);
+  white-space: nowrap;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.dica-mundo.escondida { opacity: 0; }
 
 .mundo-chao {
   position: relative;
@@ -187,28 +243,54 @@ button, input {
 
 .neuronio {
   position: relative;
-  padding: 12px 14px;
+  padding: 12px 14px 12px 26px;
   border-radius: 999px;
   border: 1.5px solid var(--surface-border);
   background: var(--surface);
   color: var(--texto);
   font-size: 0.85rem;
   line-height: 1.25;
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.15s;
 }
-.neuronio[data-role="pergunta"] { text-align: left; }
-.neuronio[data-role="resposta"] { text-align: right; cursor: default; }
+.neuronio::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.neuronio[data-role="pergunta"] { text-align: left; border-color: rgba(78, 234, 255, 0.4); }
+.neuronio[data-role="pergunta"]::before { background: var(--sinapse); box-shadow: 0 0 6px var(--sinapse); }
+.neuronio[data-role="resposta"] { text-align: left; border-color: rgba(124, 92, 252, 0.4); }
+.neuronio[data-role="resposta"]::before { background: var(--sinapse-2); box-shadow: 0 0 6px var(--sinapse-2); }
+.neuronio:active { transform: scale(0.96); }
+
+.neuronio-selecionado {
+  border-color: var(--sinapse) !important;
+  box-shadow: 0 0 18px rgba(78, 234, 255, 0.55);
+  transform: translateY(-3px);
+  animation: selecionar-pulso 1s ease-in-out infinite;
+}
+@keyframes selecionar-pulso {
+  0%, 100% { box-shadow: 0 0 12px rgba(78, 234, 255, 0.4); }
+  50% { box-shadow: 0 0 22px rgba(78, 234, 255, 0.75); }
+}
 
 .neuronio-aceso {
-  border-color: var(--dourado);
+  border-color: var(--dourado) !important;
   background: #1a1608;
   box-shadow: 0 0 18px rgba(245, 185, 66, 0.5);
   animation: piscar 0.5s ease;
+  cursor: default;
+  pointer-events: none;
 }
 .neuronio-erro {
-  border-color: var(--erro);
+  border-color: var(--erro) !important;
   animation: tremer 0.4s ease;
 }
 @keyframes piscar {
@@ -240,9 +322,16 @@ button, input {
 .fio-errado { stroke: var(--erro); stroke-dasharray: 3 3; }
 
 .mascote { display: flex; justify-content: center; padding: 4px 0 0; }
-.mascote-svg { width: 56px; height: 56px; overflow: visible; }
+.mascote-svg { width: 84px; height: 84px; overflow: visible; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); }
 .corpo { transform-origin: 32px 50px; }
-.perna { stroke: var(--texto-fraco); stroke-width: 3; stroke-linecap: round; }
+.perna { stroke: var(--texto-fraco); stroke-width: 3; stroke-linecap: round; transform-box: fill-box; transform-origin: top center; }
+
+.mascote-andando .perna:nth-of-type(1) { animation: perna-andar 0.32s ease-in-out infinite; }
+.mascote-andando .perna:nth-of-type(2) { animation: perna-andar 0.32s ease-in-out infinite reverse; }
+@keyframes perna-andar {
+  0%, 100% { transform: rotate(-16deg); }
+  50% { transform: rotate(16deg); }
+}
 .sombra { fill: #000; opacity: 0.3; }
 .cabeca { fill: var(--surface); stroke: var(--sinapse); stroke-width: 1.5; }
 .cabeca-feliz { stroke: var(--dourado); }
@@ -324,12 +413,22 @@ button, input {
 /* ---------- projetor ---------- */
 
 body.projetor {
+  position: relative;
+  overflow: hidden;
   padding: 24px 40px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   height: 100vh;
 }
+.cerebro-turma {
+  position: fixed;
+  width: min(56vw, 620px);
+  z-index: 0;
+  opacity: calc(0.1 + var(--progresso, 0) * 0.42);
+  filter: drop-shadow(0 0 calc(4px + var(--progresso, 0) * 30px) rgba(78, 234, 255, calc(0.2 + var(--progresso, 0) * 0.5)));
+}
+.projetor-topo, .projetor-corpo { position: relative; z-index: 1; }
 .projetor-topo {
   display: flex;
   justify-content: space-between;
