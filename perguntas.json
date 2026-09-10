@@ -1,0 +1,15 @@
+{
+  "perguntas": [
+    { "id": "n1", "conceito": "O que é uma variável?", "correta": "Espaço de memória nomeado que guarda um valor" },
+    { "id": "n2", "conceito": "O que é um loop (laço)?", "correta": "Repete um bloco de código várias vezes" },
+    { "id": "n3", "conceito": "O que é uma função?", "correta": "Bloco de código reutilizável que executa uma tarefa" },
+    { "id": "n4", "conceito": "O que é uma condicional (if)?", "correta": "Executa um código só se uma condição for verdadeira" },
+    { "id": "n5", "conceito": "O que é um array (vetor)?", "correta": "Lista ordenada de valores guardados numa única variável" },
+    { "id": "n6", "conceito": "O que é um algoritmo?", "correta": "Sequência de passos pra resolver um problema" }
+  ],
+  "decoys": [
+    "Um tipo de arquivo de imagem",
+    "Um erro de sintaxe no código",
+    "Um comando pra desligar o programa"
+  ]
+}

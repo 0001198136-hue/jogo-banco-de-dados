@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Conecta Ideias</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+  <div id="tela-carregando" class="tela ativa">
+    <div class="pulso"></div>
+    <p class="marca">Carregando...</p>
+  </div>
+
+  <div id="tela-nome" class="tela">
+    <h1>Conecta Ideias</h1>
+    <p class="marca">Digite seu nome pra entrar na partida</p>
+    <form id="form-nome" class="campo-nome">
+      <input id="input-nome" type="text" maxlength="24" placeholder="Seu nome" autocomplete="off" required />
+      <button type="submit">Entrar</button>
+    </form>
+    <p id="erro-nome" class="erro-texto"></p>
+  </div>
+
+  <div id="tela-aguardando" class="tela">
+    <div class="pulso"></div>
+    <h2>Aguardando o apresentador iniciar...</h2>
+    <p class="marca">Deixa essa tela aberta, ela começa sozinha</p>
+  </div>
+
+  <div id="tela-jogo" class="tela" style="padding:0; justify-content:flex-start;">
+    <div class="barra-topo">
+      <div><span class="cifra-label">Sessão</span><span id="countdown-sessao" class="cifra">--:--</span></div>
+      <div><span class="cifra-label">Seu tempo</span><span id="cronometro-pessoal" class="cifra">00:00</span></div>
+    </div>
+    <div class="barra-progresso-fundo"><div id="barra-progresso" class="barra-progresso"></div></div>
+    <div id="brain">
+      <svg id="svg-fios"></svg>
+      <div id="coluna-perguntas" class="coluna"></div>
+      <div id="coluna-respostas" class="coluna"></div>
+    </div>
+  </div>
+
+  <div id="tela-fim" class="tela">
+    <h2>Cérebro completo</h2>
+    <p class="cifra" id="tempo-final-texto">00:00</p>
+    <p class="marca">Confere o ranking no telão</p>
+  </div>
+
+  <script type="module">
+    import { iniciarJogo } from '/src/game.js';
+    iniciarJogo();
+  </script>
+</body>
+</html>
