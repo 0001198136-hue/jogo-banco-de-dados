@@ -144,9 +144,9 @@ button, input {
 }
 
 /* mundo estático: cérebro no centro, perguntas/respostas espalhadas em
-   círculo ao redor (posicionadas via JS, ver posicionarCirculo em game.js).
-   o boneco fica no centro e "anda de verdade" até o nó tocado quando o
-   jogador seleciona/conecta, depois volta pro meio. */
+   círculo ao redor (posicionadas via JS, ver posicionarCirculo em game.js,
+   com distância de arco igual pra não ficar espremido perto do topo/base).
+   o boneco fica parado no centro, só reage com poses (acerto/erro). */
 
 .cerebro-fundo {
   position: absolute;
@@ -223,27 +223,27 @@ button, input {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100px;
-  min-height: 46px;
-  display: flex;
-  align-items: center;
+  width: 96px;
+  height: 52px;
+  padding: 5px 8px 5px 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   text-align: left;
-  font-size: 0.7rem;
-  line-height: 1.2;
+  font-size: 0.64rem;
+  line-height: 1.15;
   /* left/top são setados via JS (posicionarCirculo) como o CENTRO do nó */
   transform: translate(-50%, -50%);
 }
 
 .mascote-mundo {
-  --mx: 50%;
-  --my: 50%;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 5;
   pointer-events: none;
-  transform: translate(var(--mx), var(--my)) translate(-50%, -50%);
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .neuronio {

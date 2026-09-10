@@ -126,11 +126,36 @@ function renderizarMundo({ perguntas, pool }) {
   });
 }
 
-// Espalha os nós num círculo (na verdade uma elipse, pra caber melhor em
-// telas de celular no modo retrato) em volta do cérebro, todos visíveis de
-// uma vez, sem precisar rolar a tela. Retorna o centro do mundo (onde o
-// boneco fica parado) e um mapa id -> {x, y} com o centro de cada nó, pra
-// o boneco saber pra onde "andar" depois.
+// Espalha os nós numa elipse ao redor do cérebro, todos visíveis de uma
+// vez (sem scroll). Usa distância de arco igual entre os nós (em vez de
+// ângulo igual) pra eles não ficarem espremidos no topo/embaixo — numa
+// elipse, ângulos iguais NÃO viram distâncias iguais na tela.
+function distanciasIguaisNaElipse(total, rx, ry, anguloInicial) {
+  const passos = 720;
+  const angulos = new Array(passos + 1);
+  const comprimento = new Array(passos + 1);
+  comprimento[0] = 0;
+  angulos[0] = anguloInicial;
+  for (let i = 1; i <= passos; i++) {
+    const t0 = anguloInicial + ((i - 1) / passos) * Math.PI * 2;
+    const t1 = anguloInicial + (i / passos) * Math.PI * 2;
+    const dx = rx * (Math.cos(t1) - Math.cos(t0));
+    const dy = ry * (Math.sin(t1) - Math.sin(t0));
+    angulos[i] = t1;
+    comprimento[i] = comprimento[i - 1] + Math.hypot(dx, dy);
+  }
+  const total_comprimento = comprimento[passos];
+
+  const resultado = [];
+  let ponteiro = 0;
+  for (let i = 0; i < total; i++) {
+    const alvo = (i / total) * total_comprimento;
+    while (ponteiro < passos && comprimento[ponteiro] < alvo) ponteiro++;
+    resultado.push(angulos[ponteiro]);
+  }
+  return resultado;
+}
+
 function posicionarCirculo(mundoEl) {
   const nos = Array.from(mundoEl.querySelectorAll('.neuronio'));
   const rect = mundoEl.getBoundingClientRect();
@@ -138,25 +163,21 @@ function posicionarCirculo(mundoEl) {
   const cy = rect.height / 2;
 
   const margem = 6;
-  const nodeW = 100;
-  const nodeH = 46;
+  const nodeW = 96;
+  const nodeH = 52;
   const rx = Math.max(cx - nodeW / 2 - margem, 60);
   const ry = Math.max(cy - nodeH / 2 - margem, 60);
 
-  const total = nos.length;
   const anguloInicial = -Math.PI / 2; // começa no topo
-  const posicoes = new Map();
+  const angulos = distanciasIguaisNaElipse(nos.length, rx, ry, anguloInicial);
 
   nos.forEach((el, i) => {
-    const angulo = anguloInicial + (i / total) * Math.PI * 2;
+    const angulo = angulos[i];
     const x = cx + rx * Math.cos(angulo);
     const y = cy + ry * Math.sin(angulo);
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
-    posicoes.set(el.dataset.id, { x, y });
   });
-
-  return { centro: { x: cx, y: cy }, posicoes };
 }
 
 export async function iniciarJogo() {
@@ -195,29 +216,7 @@ export async function iniciarJogo() {
   const cerebroEl = $('.cerebro-fundo');
   const dicaEl = $('#dica-mundo');
 
-  const { centro, posicoes } = posicionarCirculo(mundoEl);
-
-  // Move o boneco de verdade até um ponto (em px, relativo ao #mundo) e
-  // liga o balanço das pernas enquanto ele "caminha" até lá.
-  function moverMascotePara(x, y, duracaoMs = 450) {
-    if (!mascoteEl) return;
-    mascoteEl.style.setProperty('--mx', `${x}px`);
-    mascoteEl.style.setProperty('--my', `${y}px`);
-    mascoteEl.classList.add('mascote-andando');
-    clearTimeout(moverMascotePara._t);
-    moverMascotePara._t = setTimeout(() => {
-      mascoteEl.classList.remove('mascote-andando');
-    }, duracaoMs);
-  }
-
-  function mascoteVoltarCentro() {
-    moverMascotePara(centro.x, centro.y);
-  }
-
-  // posição inicial sem transição (senão ele "desliza" do canto na 1ª pintura)
-  mascoteEl?.style.setProperty('transition', 'none');
-  moverMascotePara(centro.x, centro.y, 0);
-  requestAnimationFrame(() => mascoteEl?.style.removeProperty('transition'));
+  posicionarCirculo(mundoEl);
 
   function esconderDica() { dicaEl?.classList.add('escondida'); }
   setTimeout(esconderDica, 6000);
@@ -308,9 +307,6 @@ export async function iniciarJogo() {
       atualizarProgresso();
       pingCerebro();
       mostrarMascote('acerto', 650);
-      const pos = posicoes.get(respostaId);
-      if (pos) moverMascotePara(pos.x, pos.y, 650);
-      setTimeout(mascoteVoltarCentro, 650);
       if (conectados === total) finalizarJogador();
     } else {
       erros += 1;
@@ -319,9 +315,6 @@ export async function iniciarJogo() {
       perguntaEl.classList.add('neuronio-erro');
       respostaEl.classList.add('neuronio-erro');
       mostrarMascote('erro', 1600);
-      const pos = posicoes.get(respostaId);
-      if (pos) moverMascotePara(pos.x, pos.y, 1600);
-      setTimeout(mascoteVoltarCentro, 1600);
       setTimeout(() => {
         fioErrado.remove();
         perguntaEl.classList.remove('neuronio-erro');
@@ -345,12 +338,10 @@ export async function iniciarJogo() {
     esconderDica();
 
     if (el.dataset.role === 'pergunta') {
-      if (selecionada?.el === el) { limparSelecao(); mascoteVoltarCentro(); return; } // toca de novo = desmarca
+      if (selecionada?.el === el) { limparSelecao(); return; } // toca de novo = desmarca
       limparSelecao();
       selecionada = { id: el.dataset.id, el };
       el.classList.add('neuronio-selecionado');
-      const pos = posicoes.get(el.dataset.id);
-      if (pos) moverMascotePara(pos.x, pos.y);
       return;
     }
 
