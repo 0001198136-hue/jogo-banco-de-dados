@@ -11,7 +11,7 @@
     <div class="admin-card">
       <h1>Conecta Ideias</h1>
       <p class="marca">Só você deveria estar nessa página</p>
-      <img id="qr" class="qr" alt="QR code pra entrar no jogo" width="220" height="220" />
+      <div id="qr" class="qr" role="img" aria-label="QR code pra entrar no jogo"></div>
       <p id="url-jogo" class="marca"></p>
       <p id="contador" class="contador-jogadores">0 jogadores conectados</p>
       <button id="btn-iniciar" class="botao-principal">Iniciar sessão</button>
@@ -40,9 +40,11 @@
 
       const urlJogo = new URL('/', window.location.origin).toString();
       $('#url-jogo').textContent = urlJogo;
-      // Gerado localmente (sem chamar API externa) — não depende de internet
-      // nem corre risco de ser bloqueado por adblock ou pela rede do local.
-      $('#qr').src = await QRCode.toDataURL(urlJogo, { width: 280, margin: 1 });
+      // Gerado localmente (sem chamar API externa) — não depende de internet.
+      // Usamos SVG (não canvas.toDataURL) porque navegadores/extensões de
+      // privacidade bloqueiam extração de canvas sem interação do usuário
+      // e devolvem pixels corrompidos em vez de erro (foi o bug do QR listrado).
+      $('#qr').innerHTML = await QRCode.toString(urlJogo, { type: 'svg', width: 280, margin: 1 });
 
       const btn = $('#btn-iniciar');
       if (session.started_at) {

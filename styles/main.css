@@ -208,6 +208,47 @@ button, input {
 .fio-certo { stroke: var(--dourado); filter: drop-shadow(0 0 4px rgba(245, 185, 66, 0.7)); }
 .fio-errado { stroke: var(--erro); stroke-dasharray: 3 3; }
 
+.mascote { display: flex; justify-content: center; padding: 4px 0 0; }
+.mascote-svg { width: 56px; height: 56px; overflow: visible; }
+.corpo { transform-origin: 32px 50px; }
+.perna { stroke: var(--texto-fraco); stroke-width: 3; stroke-linecap: round; }
+.sombra { fill: #000; opacity: 0.3; }
+.cabeca { fill: var(--surface); stroke: var(--sinapse); stroke-width: 1.5; }
+.cabeca-feliz { stroke: var(--dourado); }
+.cabeca-erro { stroke: var(--erro); }
+.olho { fill: var(--texto); }
+.boca { fill: none; stroke: var(--texto-fraco); stroke-width: 1.4; stroke-linecap: round; }
+.boca-feliz { stroke: var(--dourado); }
+.olho-feliz, .olho-erro { fill: none; stroke: var(--texto); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.olho-erro { stroke: var(--texto-fraco); }
+.raio { stroke: var(--dourado); stroke-width: 1.5; stroke-linecap: round; opacity: 0; }
+
+.rosto { display: none; }
+.mascote[data-estado="parado"] .rosto-parado,
+.mascote[data-estado="acerto"] .rosto-acerto,
+.mascote[data-estado="erro"] .rosto-erro { display: block; }
+
+.mascote[data-estado="acerto"] .corpo { animation: mascote-pulo 0.6s ease; }
+.mascote[data-estado="acerto"] .raio { animation: mascote-brilhar 0.6s ease; }
+.mascote[data-estado="erro"] .corpo { animation: mascote-cair 1.6s ease; }
+
+@keyframes mascote-pulo {
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-8px) scale(1.06); }
+  60% { transform: translateY(2px) scale(0.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes mascote-brilhar {
+  0%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+@keyframes mascote-cair {
+  0% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-12deg) translateY(0); }
+  40%, 85% { transform: rotate(80deg) translateY(6px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
 .tela-fim .cifra { font-size: 2.4rem; color: var(--dourado); }
 
 /* ---------- admin ---------- */
@@ -225,10 +266,16 @@ button, input {
   align-items: center;
   text-align: center;
 }
-.admin-card img.qr {
+.admin-card .qr {
+  display: inline-block;
   border-radius: 8px;
   background: #fff;
   padding: 8px;
+}
+.admin-card .qr svg {
+  display: block;
+  width: 220px;
+  height: 220px;
 }
 .botao-principal {
   padding: 16px 28px;

@@ -34,6 +34,35 @@
       <div><span class="cifra-label">Seu tempo</span><span id="cronometro-pessoal" class="cifra">00:00</span></div>
     </div>
     <div class="barra-progresso-fundo"><div id="barra-progresso" class="barra-progresso"></div></div>
+    <div id="mascote" class="mascote" data-estado="parado" aria-hidden="true">
+      <svg class="mascote-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <g class="corpo">
+          <ellipse class="sombra" cx="32" cy="54" rx="14" ry="4" />
+          <line class="perna" x1="24" y1="44" x2="19" y2="56" />
+          <line class="perna" x1="40" y1="44" x2="45" y2="56" />
+          <g class="rosto rosto-parado">
+            <ellipse class="cabeca" cx="32" cy="32" rx="16" ry="15" />
+            <circle class="olho" cx="26" cy="30" r="2.6" />
+            <circle class="olho" cx="38" cy="30" r="2.6" />
+            <path class="boca" d="M26 40 Q32 43 38 40" />
+          </g>
+          <g class="rosto rosto-acerto">
+            <ellipse class="cabeca cabeca-feliz" cx="32" cy="32" rx="16" ry="15" />
+            <path class="olho-feliz" d="M23 28 L27 30 L23 32" />
+            <path class="olho-feliz" d="M41 28 L37 30 L41 32" />
+            <path class="boca boca-feliz" d="M25 39 Q32 46 39 39" />
+            <line class="raio" x1="18" y1="20" x2="14" y2="14" />
+            <line class="raio" x1="46" y1="18" x2="50" y2="12" />
+          </g>
+          <g class="rosto rosto-erro">
+            <ellipse class="cabeca cabeca-erro" cx="32" cy="32" rx="16" ry="15" />
+            <path class="olho-erro" d="M23 27 L29 33 M29 27 L23 33" />
+            <path class="olho-erro" d="M35 27 L41 33 M41 27 L35 33" />
+            <path class="boca" d="M26 41 Q32 37 38 41" />
+          </g>
+        </g>
+      </svg>
+    </div>
     <div id="brain">
       <svg id="svg-fios"></svg>
       <div id="coluna-perguntas" class="coluna"></div>

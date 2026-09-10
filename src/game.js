@@ -168,6 +168,17 @@ export async function iniciarJogo() {
 
   const svg = $('#svg-fios');
   const brainEl = $('#brain');
+  const mascoteEl = $('#mascote');
+
+  // Troca a pose do mascote por um tempo e volta pra "parado" sozinho.
+  function mostrarMascote(estado, duracaoMs) {
+    if (!mascoteEl) return;
+    mascoteEl.dataset.estado = estado;
+    clearTimeout(mostrarMascote._timeoutId);
+    mostrarMascote._timeoutId = setTimeout(() => {
+      mascoteEl.dataset.estado = 'parado';
+    }, duracaoMs);
+  }
 
   let erros = 0;
   let conectados = 0;
@@ -230,6 +241,7 @@ export async function iniciarJogo() {
       desenharFioPermanente(perguntaEl, respostaEl, 'fio-certo');
       conectados += 1;
       atualizarProgresso();
+      mostrarMascote('acerto', 650);
       if (conectados === total) finalizarJogador();
     } else {
       erros += 1;
@@ -237,6 +249,7 @@ export async function iniciarJogo() {
       const fioErrado = desenharFioPermanente(perguntaEl, respostaEl, 'fio-errado');
       perguntaEl.classList.add('neuronio-erro');
       respostaEl.classList.add('neuronio-erro');
+      mostrarMascote('erro', 1600);
       setTimeout(() => {
         fioErrado.remove();
         perguntaEl.classList.remove('neuronio-erro');
