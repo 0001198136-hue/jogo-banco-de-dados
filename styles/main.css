@@ -138,9 +138,28 @@ button, input {
   flex: 1;
   min-height: 0;
   width: 100%;
+  display: flex;
+  align-items: center;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+}
+#mundo::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(78, 234, 255, 0.22), rgba(124, 92, 252, 0.12) 55%, transparent 75%);
+  animation: mundo-cerebro-pulso 3.4s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+@keyframes mundo-cerebro-pulso {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.06); }
 }
 /* scroll nativo é só andaime do passo 1 pra poder revisar no celular;
    passo 2 troca isso por arrasto manual (translateX) com o boneco "andando". */
@@ -150,8 +169,8 @@ button, input {
   z-index: 2;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 28px;
-  height: 100%;
   width: max-content;
   padding: 0 50vw; /* espaço nas pontas pra dar pra centralizar o 1º/último nó embaixo do boneco depois */
 }
