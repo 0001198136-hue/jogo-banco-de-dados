@@ -20,6 +20,7 @@
   </div>
 
   <script type="module">
+    import QRCode from 'qrcode';
     import { supabase, buscarSessaoAtiva, criarSessao } from '/src/supabaseClient.js';
 
     const $ = (sel) => document.querySelector(sel);
@@ -39,7 +40,9 @@
 
       const urlJogo = new URL('/', window.location.origin).toString();
       $('#url-jogo').textContent = urlJogo;
-      $('#qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(urlJogo)}`;
+      // Gerado localmente (sem chamar API externa) — não depende de internet
+      // nem corre risco de ser bloqueado por adblock ou pela rede do local.
+      $('#qr').src = await QRCode.toDataURL(urlJogo, { width: 280, margin: 1 });
 
       const btn = $('#btn-iniciar');
       if (session.started_at) {
