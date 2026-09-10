@@ -138,21 +138,15 @@ button, input {
   flex: 1;
   min-height: 0;
   width: 100%;
-  display: flex;
-  align-items: center;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   background-image: radial-gradient(circle, rgba(78, 234, 255, 0.14) 1px, transparent 1.5px);
   background-size: 28px 28px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-#mundo::-webkit-scrollbar { display: none; }
 
-/* boneco fica parado no centro (posição absoluta = não rola com o chão);
-   é o chão (.mundo-chao) que desliza por baixo dele com o dedo, dando a
-   ilusão de que ele anda pelo mundo enquanto o jogador arrasta a tela. */
+/* mundo estático: cérebro no centro, perguntas/respostas espalhadas em
+   círculo ao redor (posicionadas via JS, ver posicionarCirculo em game.js).
+   o boneco fica no centro e "anda de verdade" até o nó tocado quando o
+   jogador seleciona/conecta, depois volta pro meio. */
 
 .cerebro-fundo {
   position: absolute;
@@ -221,24 +215,35 @@ button, input {
 .dica-mundo.escondida { opacity: 0; }
 
 .mundo-chao {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
+}
+.mundo-chao .neuronio {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  min-height: 46px;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-  gap: 28px;
-  width: max-content;
-  padding: 0 50vw; /* espaço nas pontas pra dar pra centralizar o 1º/último nó embaixo do boneco depois */
+  text-align: left;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  /* left/top são setados via JS (posicionarCirculo) como o CENTRO do nó */
+  transform: translate(-50%, -50%);
 }
-.mundo-chao .neuronio { text-align: center; width: 130px; }
 
 .mascote-mundo {
+  --mx: 50%;
+  --my: 50%;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
   z-index: 5;
   pointer-events: none;
+  transform: translate(var(--mx), var(--my)) translate(-50%, -50%);
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .neuronio {

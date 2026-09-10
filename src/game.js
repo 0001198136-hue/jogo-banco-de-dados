@@ -126,6 +126,39 @@ function renderizarMundo({ perguntas, pool }) {
   });
 }
 
+// Espalha os nós num círculo (na verdade uma elipse, pra caber melhor em
+// telas de celular no modo retrato) em volta do cérebro, todos visíveis de
+// uma vez, sem precisar rolar a tela. Retorna o centro do mundo (onde o
+// boneco fica parado) e um mapa id -> {x, y} com o centro de cada nó, pra
+// o boneco saber pra onde "andar" depois.
+function posicionarCirculo(mundoEl) {
+  const nos = Array.from(mundoEl.querySelectorAll('.neuronio'));
+  const rect = mundoEl.getBoundingClientRect();
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+
+  const margem = 6;
+  const nodeW = 100;
+  const nodeH = 46;
+  const rx = Math.max(cx - nodeW / 2 - margem, 60);
+  const ry = Math.max(cy - nodeH / 2 - margem, 60);
+
+  const total = nos.length;
+  const anguloInicial = -Math.PI / 2; // começa no topo
+  const posicoes = new Map();
+
+  nos.forEach((el, i) => {
+    const angulo = anguloInicial + (i / total) * Math.PI * 2;
+    const x = cx + rx * Math.cos(angulo);
+    const y = cy + ry * Math.sin(angulo);
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    posicoes.set(el.dataset.id, { x, y });
+  });
+
+  return { centro: { x: cx, y: cy }, posicoes };
+}
+
 export async function iniciarJogo() {
   mostrarTela('carregando');
 
@@ -161,6 +194,30 @@ export async function iniciarJogo() {
   const mascoteEl = $('#mascote');
   const cerebroEl = $('.cerebro-fundo');
   const dicaEl = $('#dica-mundo');
+
+  const { centro, posicoes } = posicionarCirculo(mundoEl);
+
+  // Move o boneco de verdade até um ponto (em px, relativo ao #mundo) e
+  // liga o balanço das pernas enquanto ele "caminha" até lá.
+  function moverMascotePara(x, y, duracaoMs = 450) {
+    if (!mascoteEl) return;
+    mascoteEl.style.setProperty('--mx', `${x}px`);
+    mascoteEl.style.setProperty('--my', `${y}px`);
+    mascoteEl.classList.add('mascote-andando');
+    clearTimeout(moverMascotePara._t);
+    moverMascotePara._t = setTimeout(() => {
+      mascoteEl.classList.remove('mascote-andando');
+    }, duracaoMs);
+  }
+
+  function mascoteVoltarCentro() {
+    moverMascotePara(centro.x, centro.y);
+  }
+
+  // posição inicial sem transição (senão ele "desliza" do canto na 1ª pintura)
+  mascoteEl?.style.setProperty('transition', 'none');
+  moverMascotePara(centro.x, centro.y, 0);
+  requestAnimationFrame(() => mascoteEl?.style.removeProperty('transition'));
 
   function esconderDica() { dicaEl?.classList.add('escondida'); }
   setTimeout(esconderDica, 6000);
@@ -251,6 +308,9 @@ export async function iniciarJogo() {
       atualizarProgresso();
       pingCerebro();
       mostrarMascote('acerto', 650);
+      const pos = posicoes.get(respostaId);
+      if (pos) moverMascotePara(pos.x, pos.y, 650);
+      setTimeout(mascoteVoltarCentro, 650);
       if (conectados === total) finalizarJogador();
     } else {
       erros += 1;
@@ -259,6 +319,9 @@ export async function iniciarJogo() {
       perguntaEl.classList.add('neuronio-erro');
       respostaEl.classList.add('neuronio-erro');
       mostrarMascote('erro', 1600);
+      const pos = posicoes.get(respostaId);
+      if (pos) moverMascotePara(pos.x, pos.y, 1600);
+      setTimeout(mascoteVoltarCentro, 1600);
       setTimeout(() => {
         fioErrado.remove();
         perguntaEl.classList.remove('neuronio-erro');
@@ -268,8 +331,7 @@ export async function iniciarJogo() {
   }
 
   // Seleção por toque: escolhe uma pergunta, depois toca na resposta pra ligar.
-  // (arrastar fio não funciona bem num mundo com scroll horizontal — por isso
-  // é toque-toque em vez de pointerdown/move/up.)
+  // (toque-toque em vez de arrastar o fio com o dedo — mais confiável no celular.)
   let selecionada = null;
 
   function limparSelecao() {
@@ -283,10 +345,12 @@ export async function iniciarJogo() {
     esconderDica();
 
     if (el.dataset.role === 'pergunta') {
-      if (selecionada?.el === el) { limparSelecao(); return; } // toca de novo = desmarca
+      if (selecionada?.el === el) { limparSelecao(); mascoteVoltarCentro(); return; } // toca de novo = desmarca
       limparSelecao();
       selecionada = { id: el.dataset.id, el };
       el.classList.add('neuronio-selecionado');
+      const pos = posicoes.get(el.dataset.id);
+      if (pos) moverMascotePara(pos.x, pos.y);
       return;
     }
 
@@ -299,12 +363,4 @@ export async function iniciarJogo() {
   $('#mundo-chao').querySelectorAll('.neuronio').forEach((el) => {
     el.addEventListener('click', () => onTocarNeuronio(el));
   });
-
-  // Boneco "anda" enquanto o mundo rola (scroll horizontal por toque).
-  let scrollTimeoutId;
-  mundoEl.addEventListener('scroll', () => {
-    mascoteEl.classList.add('mascote-andando');
-    clearTimeout(scrollTimeoutId);
-    scrollTimeoutId = setTimeout(() => mascoteEl.classList.remove('mascote-andando'), 180);
-  }, { passive: true });
 }
