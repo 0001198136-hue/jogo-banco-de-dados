@@ -1,0 +1,20 @@
+{
+  "perguntas": [
+    { "id": "n1", "conceito": "O que é um banco orientado a documentos?", "correta": "Banco NoSQL que guarda dados em documentos JSON/BSON, sem esquema fixo" },
+    { "id": "n2", "conceito": "Qual formato o MongoDB usa pra guardar os dados?", "correta": "BSON, uma versão binária do JSON" },
+    { "id": "n3", "conceito": "No MongoDB, qual o equivalente de uma 'tabela'?", "correta": "Coleção (collection)" },
+    { "id": "n4", "conceito": "No MongoDB, qual o equivalente de uma 'linha'?", "correta": "Documento" },
+    { "id": "n5", "conceito": "No MongoDB, qual o equivalente de uma 'coluna'?", "correta": "Campo (field)" },
+    { "id": "n6", "conceito": "O que é 'esquema flexível'?", "correta": "Documentos da mesma coleção podem ter campos diferentes entre si" },
+    { "id": "n7", "conceito": "Por que agrupar dados relacionados no mesmo documento?", "correta": "Evita JOINs e deixa a leitura bem mais rápida" },
+    { "id": "n8", "conceito": "Qual a maior desvantagem de agrupar dados no documento?", "correta": "Pode duplicar dados e exigir atualização em vários lugares" },
+    { "id": "n9", "conceito": "Como o site conversa com o MongoDB na prática?", "correta": "Por uma API REST, trocando dados no formato JSON" },
+    { "id": "n10", "conceito": "Quando é melhor EVITAR um banco de documentos?", "correta": "Em sistemas com transações financeiras complexas (ACID)" }
+  ],
+  "decoys": [
+    "Tabelas com esquema fixo e chaves estrangeiras",
+    "Uma linguagem de consulta exclusiva do MySQL",
+    "Um tipo de gráfico usado em dashboard de vendas",
+    "Um protocolo de segurança pra proteger senhas"
+  ]
+}
