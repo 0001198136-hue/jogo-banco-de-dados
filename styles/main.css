@@ -288,7 +288,14 @@ button, input {
   height: 6px;
   border-radius: 50%;
 }
-.neuronio[data-role="pergunta"] { text-align: left; border-color: rgba(78, 234, 255, 0.4); }
+.neuronio[data-role="pergunta"] {
+  text-align: left;
+  border-color: rgba(78, 234, 255, 0.4);
+  /* essencial pro arraste no celular: sem isso o navegador rouba o
+     gesto pra rolar a página antes do pointerdown/preventDefault agir. */
+  touch-action: none;
+  cursor: grab;
+}
 .neuronio[data-role="pergunta"]::before { background: var(--sinapse); box-shadow: 0 0 6px var(--sinapse); }
 .neuronio[data-role="resposta"] { text-align: left; border-color: rgba(124, 92, 252, 0.4); }
 .neuronio[data-role="resposta"]::before { background: var(--sinapse-2); box-shadow: 0 0 6px var(--sinapse-2); }
