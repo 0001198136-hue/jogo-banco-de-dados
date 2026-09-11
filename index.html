@@ -1,94 +1,289 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Conecta Ideias</title>
-  <link rel="stylesheet" href="/styles/main.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quiz - Ligar Pergunta e Resposta</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 32px;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; text-align: center; }
+  #status { color: #aaa; margin-bottom: 16px; font-size: 0.95rem; text-align: center; }
+
+  /* ---- Cérebro ---- */
+  #brain-wrap {
+    width: 100%;
+    max-width: 260px;
+    margin: 4px 0 18px;
+    display: flex;
+    justify-content: center;
+  }
+  #brain-wrap svg { width: 100%; height: auto; display: block; }
+  .brain-region {
+    fill: #2d2d4a;
+    stroke: #44446a;
+    stroke-width: 2;
+    transition: fill 0.5s ease, filter 0.5s ease;
+  }
+  .brain-region.lit {
+    fill: #3ddc84;
+    filter: drop-shadow(0 0 6px #3ddc84);
+  }
+  .brain-region.lit.pulse {
+    animation: brainPulse 0.6s ease;
+  }
+  @keyframes brainPulse {
+    0% { filter: drop-shadow(0 0 2px #3ddc84); transform: scale(1); }
+    40% { filter: drop-shadow(0 0 14px #3ddc84); transform: scale(1.06); }
+    100% { filter: drop-shadow(0 0 6px #3ddc84); transform: scale(1); }
+  }
+
+  #board {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    max-width: 700px;
+    justify-content: center;
+  }
+  .col { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .col h2 { font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 4px; text-align: center; }
+  .card {
+    background: #2d2d4a;
+    border: 2px solid #44446a;
+    border-radius: 10px;
+    padding: 14px 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    text-align: center;
+    transition: transform 0.12s, border-color 0.12s, background 0.12s;
+    user-select: none;
+    word-break: break-word;
+  }
+  .card:hover { border-color: #6a6aa8; }
+  .card.selected {
+    border-color: #ffd23f;
+    background: #3d3d63;
+    transform: scale(1.03);
+  }
+  .card.correct {
+    background: #1e6b3f;
+    border-color: #3ddc84;
+    cursor: default;
+    opacity: 0.85;
+  }
+  .card.wrong {
+    animation: shake 0.35s;
+    border-color: #e0483e;
+  }
+  .card.disabled { pointer-events: none; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  #restart {
+    margin-top: 28px;
+    background: #ffd23f;
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: none;
+  }
+  #restart:active { transform: scale(0.97); }
+  #win {
+    margin-top: 20px;
+    font-size: 1.3rem;
+    color: #3ddc84;
+    font-weight: bold;
+    text-align: center;
+    display: none;
+  }
+
+  /* ---- Responsivo para celular ---- */
+  @media (max-width: 480px) {
+    body { padding: 14px 8px 28px; }
+    h1 { font-size: 1.15rem; }
+    #status { font-size: 0.85rem; margin-bottom: 12px; }
+    #brain-wrap { max-width: 180px; margin-bottom: 14px; }
+    #board { gap: 8px; }
+    .col { gap: 7px; }
+    .col h2 { font-size: 0.7rem; margin-bottom: 2px; }
+    .card {
+      padding: 9px 5px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+      line-height: 1.25;
+    }
+    #restart { padding: 9px 20px; font-size: 0.9rem; margin-top: 20px; }
+    #win { font-size: 1.1rem; }
+  }
+
+  @media (max-width: 360px) {
+    .card { font-size: 0.72rem; padding: 8px 4px; }
+    #board { gap: 6px; }
+  }
+</style>
 </head>
 <body>
-  <div id="tela-carregando" class="tela ativa">
-    <div class="pulso"></div>
-    <p class="marca">Carregando...</p>
-  </div>
 
-  <div id="tela-nome" class="tela">
-    <h1>Conecta Ideias</h1>
-    <p class="marca">Digite seu nome pra entrar na partida</p>
-    <form id="form-nome" class="campo-nome">
-      <input id="input-nome" type="text" maxlength="24" placeholder="Seu nome" autocomplete="off" required />
-      <button type="submit">Entrar</button>
-    </form>
-    <p id="erro-nome" class="erro-texto"></p>
-  </div>
+<h1>Ligue a Pergunta à Resposta</h1>
+<div id="status">Clique numa pergunta, depois na resposta certa</div>
 
-  <div id="tela-aguardando" class="tela">
-    <div class="pulso"></div>
-    <h2>Aguardando o apresentador iniciar...</h2>
-    <p class="marca">Deixa essa tela aberta, ela começa sozinha</p>
-  </div>
+<div id="brain-wrap">
+  <svg viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg">
+    <g id="brain-regions">
+      <path class="brain-region" data-idx="0" d="M100 12 C70 12 55 25 50 40 C45 40 38 48 40 58 C36 62 34 70 40 78 L60 78 L65 45 C75 30 90 20 100 20 Z"/>
+      <path class="brain-region" data-idx="1" d="M100 12 C130 12 145 25 150 40 C155 40 162 48 160 58 C164 62 166 70 160 78 L140 78 L135 45 C125 30 110 20 100 20 Z"/>
+      <path class="brain-region" data-idx="2" d="M40 58 C34 66 32 78 38 90 L58 92 L60 78 L40 78 Z"/>
+      <path class="brain-region" data-idx="3" d="M160 58 C166 66 168 78 162 90 L142 92 L140 78 L160 78 Z"/>
+      <path class="brain-region" data-idx="4" d="M38 90 C36 104 42 118 55 126 L68 108 L58 92 Z"/>
+      <path class="brain-region" data-idx="5" d="M162 90 C164 104 158 118 145 126 L132 108 L142 92 Z"/>
+      <path class="brain-region" data-idx="6" d="M55 126 C64 140 82 150 100 150 L100 112 L68 108 Z"/>
+      <path class="brain-region" data-idx="7" d="M145 126 C136 140 118 150 100 150 L100 112 L132 108 Z"/>
+    </g>
+  </svg>
+</div>
 
-  <div id="tela-jogo" class="tela" style="padding:0; justify-content:flex-start;">
-    <div class="barra-topo">
-      <div><span class="cifra-label">Sessão</span><span id="countdown-sessao" class="cifra">--:--</span></div>
-      <div><span class="cifra-label">Seu tempo</span><span id="cronometro-pessoal" class="cifra">00:00</span></div>
-    </div>
-    <div class="barra-progresso-fundo"><div id="barra-progresso" class="barra-progresso"></div></div>
-    <div id="mundo" class="mundo">
-      <svg class="cerebro-fundo" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path class="cerebro-contorno" d="M60 130 Q30 120 32 90 Q20 78 34 58 Q30 36 58 28 Q70 10 100 14 Q120 4 140 16 L140 170 Q120 182 96 178 Q70 184 56 168 Q38 168 34 150 Q44 140 60 130 Z" />
-        <path class="cerebro-contorno" d="M240 130 Q270 120 268 90 Q280 78 266 58 Q270 36 242 28 Q230 10 200 14 Q180 4 160 16 L160 170 Q180 182 204 178 Q230 184 244 168 Q262 168 266 150 Q256 140 240 130 Z" />
-        <line class="cerebro-fenda" x1="150" y1="14" x2="150" y2="176" />
-        <path class="cerebro-dobra" d="M50 60 Q65 70 55 85 Q75 95 65 110" />
-        <path class="cerebro-dobra" d="M100 30 Q115 45 105 60 Q120 75 110 90" />
-        <path class="cerebro-dobra" d="M250 60 Q235 70 245 85 Q225 95 235 110" />
-        <path class="cerebro-dobra" d="M200 30 Q185 45 195 60 Q180 75 190 90" />
-        <path class="cerebro-tronco" d="M138 172 Q150 200 162 172" />
-      </svg>
-      <svg id="svg-fios"></svg>
-      <div id="mundo-chao" class="mundo-chao"></div>
-      <p id="dica-mundo" class="dica-mundo">Toque numa pergunta e depois na resposta certa — role a tela se precisar</p>
-      <div id="mascote" class="mascote mascote-mundo" data-estado="parado" aria-hidden="true">
-        <svg class="mascote-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <g class="corpo">
-            <ellipse class="sombra" cx="32" cy="54" rx="14" ry="4" />
-            <line class="perna" x1="24" y1="44" x2="19" y2="56" />
-            <line class="perna" x1="40" y1="44" x2="45" y2="56" />
-            <g class="rosto rosto-parado">
-              <ellipse class="cabeca" cx="32" cy="32" rx="16" ry="15" />
-              <circle class="olho" cx="26" cy="30" r="2.6" />
-              <circle class="olho" cx="38" cy="30" r="2.6" />
-              <path class="boca" d="M26 40 Q32 43 38 40" />
-            </g>
-            <g class="rosto rosto-acerto">
-              <ellipse class="cabeca cabeca-feliz" cx="32" cy="32" rx="16" ry="15" />
-              <path class="olho-feliz" d="M23 28 L27 30 L23 32" />
-              <path class="olho-feliz" d="M41 28 L37 30 L41 32" />
-              <path class="boca boca-feliz" d="M25 39 Q32 46 39 39" />
-              <line class="raio" x1="18" y1="20" x2="14" y2="14" />
-              <line class="raio" x1="46" y1="18" x2="50" y2="12" />
-            </g>
-            <g class="rosto rosto-erro">
-              <ellipse class="cabeca cabeca-erro" cx="32" cy="32" rx="16" ry="15" />
-              <path class="olho-erro" d="M23 27 L29 33 M29 27 L23 33" />
-              <path class="olho-erro" d="M35 27 L41 33 M41 27 L35 33" />
-              <path class="boca" d="M26 41 Q32 37 38 41" />
-            </g>
-          </g>
-        </svg>
-      </div>
-    </div>
+<div id="board">
+  <div class="col">
+    <h2>Perguntas</h2>
+    <div id="questions"></div>
   </div>
-
-  <div id="tela-fim" class="tela">
-    <h2>Cérebro completo</h2>
-    <p class="cifra" id="tempo-final-texto">00:00</p>
-    <p class="marca">Confere o ranking no telão</p>
+  <div class="col">
+    <h2>Respostas</h2>
+    <div id="answers"></div>
   </div>
+</div>
+<div id="win">🎉 Você acertou todas!</div>
+<button id="restart">Jogar de novo</button>
 
-  <script type="module">
-    import { iniciarJogo } from '/src/game.js';
-    iniciarJogo();
-  </script>
+<script>
+// ---- EDITE AQUI: suas perguntas e respostas ----
+const PAIRS = [
+  { q: "Formato em que o MongoDB armazena os documentos", a: "JSON/BSON" },
+  { q: "Equivalente de 'Tabela' no MongoDB", a: "Coleção (Collection)" },
+  { q: "Equivalente de 'Linha/Registro' no MongoDB", a: "Documento (Document)" },
+  { q: "Equivalente de 'Coluna' no MongoDB", a: "Campo (Field)" },
+  { q: "Principal vantagem do schema flexível", a: "Adicionar campos sem migrar o schema" },
+  { q: "Principal desvantagem de agrupar dados no documento", a: "Duplicação de dados" },
+  { q: "Cenário em que é melhor evitar bancos de documentos", a: "Transações ACID complexas" },
+  { q: "Caso de uso ideal para bancos de documentos", a: "E-commerce / catálogos variados" },
+];
+// --------------------------------------------------
+
+let selectedQ = null;
+let matched = 0;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function resetBrain() {
+  document.querySelectorAll('.brain-region').forEach(r => {
+    r.classList.remove('lit', 'pulse');
+  });
+}
+
+function lightNextBrainRegion() {
+  const regions = document.querySelectorAll('.brain-region');
+  // acende as regiões na ordem em que aparecem no SVG, uma por acerto
+  const region = regions[matched - 1];
+  if (region) {
+    region.classList.add('lit', 'pulse');
+    setTimeout(() => region.classList.remove('pulse'), 600);
+  }
+}
+
+function buildBoard() {
+  matched = 0;
+  selectedQ = null;
+  resetBrain();
+  document.getElementById('win').style.display = 'none';
+  document.getElementById('restart').style.display = 'none';
+  document.getElementById('status').textContent = 'Clique numa pergunta, depois na resposta certa';
+
+  const qCol = document.getElementById('questions');
+  const aCol = document.getElementById('answers');
+  qCol.innerHTML = '';
+  aCol.innerHTML = '';
+
+  const questionsShuffled = shuffle(PAIRS.map((p, i) => ({ ...p, id: i })));
+  const answersShuffled = shuffle(PAIRS.map((p, i) => ({ ...p, id: i })));
+
+  questionsShuffled.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.textContent = p.q;
+    el.dataset.id = p.id;
+    el.addEventListener('click', () => selectQuestion(el, p.id));
+    qCol.appendChild(el);
+  });
+
+  answersShuffled.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.textContent = p.a;
+    el.dataset.id = p.id;
+    el.addEventListener('click', () => selectAnswer(el, p.id));
+    aCol.appendChild(el);
+  });
+}
+
+function selectQuestion(el, id) {
+  if (el.classList.contains('correct')) return;
+  document.querySelectorAll('#questions .card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedQ = { el, id };
+}
+
+function selectAnswer(el, id) {
+  if (el.classList.contains('correct')) return;
+  if (!selectedQ) {
+    document.getElementById('status').textContent = 'Selecione uma pergunta primeiro';
+    return;
+  }
+  if (selectedQ.id === id) {
+    selectedQ.el.classList.remove('selected');
+    selectedQ.el.classList.add('correct', 'disabled');
+    el.classList.add('correct', 'disabled');
+    matched++;
+    lightNextBrainRegion();
+    document.getElementById('status').textContent = `${matched} de ${PAIRS.length} acertadas`;
+    selectedQ = null;
+    if (matched === PAIRS.length) {
+      document.getElementById('win').style.display = 'block';
+      document.getElementById('restart').style.display = 'block';
+      document.getElementById('status').textContent = '';
+    }
+  } else {
+    el.classList.add('wrong');
+    setTimeout(() => el.classList.remove('wrong'), 350);
+  }
+}
+
+document.getElementById('restart').addEventListener('click', buildBoard);
+
+buildBoard();
+</script>
+
 </body>
 </html>
