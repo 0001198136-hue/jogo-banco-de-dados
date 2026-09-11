@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conecta Ideias — Projetor</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body class="projetor">
+  <svg class="cerebro-fundo cerebro-turma" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path class="cerebro-contorno" d="M60 130 Q30 120 32 90 Q20 78 34 58 Q30 36 58 28 Q70 10 100 14 Q120 4 140 16 L140 170 Q120 182 96 178 Q70 184 56 168 Q38 168 34 150 Q44 140 60 130 Z" />
+    <path class="cerebro-contorno" d="M240 130 Q270 120 268 90 Q280 78 266 58 Q270 36 242 28 Q230 10 200 14 Q180 4 160 16 L160 170 Q180 182 204 178 Q230 184 244 168 Q262 168 266 150 Q256 140 240 130 Z" />
+    <line class="cerebro-fenda" x1="150" y1="14" x2="150" y2="176" />
+    <path class="cerebro-dobra" d="M50 60 Q65 70 55 85 Q75 95 65 110" />
+    <path class="cerebro-dobra" d="M100 30 Q115 45 105 60 Q120 75 110 90" />
+    <path class="cerebro-dobra" d="M250 60 Q235 70 245 85 Q225 95 235 110" />
+    <path class="cerebro-dobra" d="M200 30 Q185 45 195 60 Q180 75 190 90" />
+    <path class="cerebro-tronco" d="M138 172 Q150 200 162 172" />
+  </svg>
+  <div class="projetor-topo">
+    <h1 id="titulo-projetor">Conecta Ideias — aguardando início</h1>
+    <div id="countdown-sessao" class="projetor-countdown">--:--</div>
+  </div>
+
+  <div class="projetor-corpo">
+    <div id="grid-cerebros" class="grid-cerebros"></div>
+    <div class="painel-ranking">
+      <h2>Ranking</h2>
+      <ul id="ranking-lista"></ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { buscarSessaoAtiva, supabase } from '/src/supabaseClient.js';
+    import {
+      criarCanalSessao, inscreverCanal, onProgresso, onFinalizado, enviarFreeze,
+      assinarPlayersFinalizados, iniciarPollingPlayers,
+    } from '/src/realtime.js';
+    import { calcularOffset, criarCountdownSessao, formatarMMSS } from '/src/timer.js';
+    import { renderizarRanking } from '/src/leaderboard.js';
+
+    const $ = (sel) => document.querySelector(sel);
+    const players = new Map(); // id -> { nome, progresso, finalizado, tempo_final }
+    let congelado = false;
+
+    function mergePlayer(id, patch) {
+      players.set(id, { ...(players.get(id) || { nome: 'Jogador', progresso: 0, finalizado: false }), ...patch });
+      renderTudo();
+    }
+
+    function renderTudo() {
+      const lista = Array.from(players.entries()).map(([id, p]) => ({ id, ...p }));
+      renderizarGrid(lista);
+      renderizarRanking($('#ranking-lista'), lista, { congelado });
+      atualizarBrilhoTurma(lista);
+    }
+
+    function atualizarBrilhoTurma(lista) {
+      const cerebroEl = $('.cerebro-turma');
+      if (!cerebroEl || lista.length === 0) return;
+      const media = lista.reduce((soma, p) => soma + (p.finalizado ? 100 : p.progresso), 0) / lista.length;
+      cerebroEl.style.setProperty('--progresso', String(media / 100));
+      cerebroEl.classList.toggle('cerebro-completo', lista.every((p) => p.finalizado));
+    }
+
+    function renderizarGrid(lista) {
+      const container = $('#grid-cerebros');
+      lista
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+        .forEach((p) => {
+          let card = container.querySelector(`[data-player-id="${p.id}"]`);
+          if (!card) {
+            card = document.createElement('div');
+            card.className = 'mini-cerebro';
+            card.dataset.playerId = p.id;
+            card.innerHTML = `<span class="nome"></span><div class="barra-fundo"><div class="barra"></div></div>`;
+            container.appendChild(card);
+          }
+          card.querySelector('.nome').textContent = p.nome;
+          card.querySelector('.barra').style.width = `${p.finalizado ? 100 : p.progresso}%`;
+          card.classList.toggle('finalizado', !!p.finalizado);
+        });
+    }
+
+    async function esperarSessao() {
+      return new Promise((resolve) => {
+        const tick = async () => {
+          const s = await buscarSessaoAtiva();
+          if (s?.started_at) { clearInterval(id); resolve(s); }
+        };
+        const id = setInterval(tick, 2000);
+        tick();
+      });
+    }
+
+    async function main() {
+      const session = await esperarSessao();
+      $('#titulo-projetor').textContent = 'Conecta Ideias';
+
+      const { data: iniciais } = await supabase.from('players').select('*').eq('session_id', session.id);
+      (iniciais || []).forEach((p) => players.set(p.id, {
+        nome: p.nome, progresso: p.finalizado ? 100 : 0, finalizado: p.finalizado, tempo_final: p.tempo_final,
+      }));
+      renderTudo();
+
+      const offset = await calcularOffset();
+      const startedAtMs = new Date(session.started_at).getTime();
+
+      // onProgresso/onFinalizado precisam ser registrados ANTES de
+      // inscreverCanal — ver nota em realtime.js. Era esse o motivo dos
+      // acertos nunca atualizarem aqui no telão em tempo real.
+      const channel = criarCanalSessao(session.id);
+      onProgresso(channel, ({ playerId, progresso }) => mergePlayer(playerId, { progresso }));
+      onFinalizado(channel, ({ playerId }) => mergePlayer(playerId, { finalizado: true, progresso: 100 }));
+      inscreverCanal(channel);
+
+      assinarPlayersFinalizados(session.id, (row) => mergePlayer(row.id, {
+        nome: row.nome, finalizado: row.finalizado, tempo_final: row.tempo_final,
+      }));
+
+      // rede de segurança: independe do WebSocket, garante que o ranking nunca trava
+      iniciarPollingPlayers(session.id, (lista) => {
+        lista.forEach((row) => mergePlayer(row.id, {
+          nome: row.nome, finalizado: row.finalizado, tempo_final: row.tempo_final,
+        }));
+      });
+
+      const countdownEl = $('#countdown-sessao');
+      criarCountdownSessao({
+        startedAtMs,
+        durationSeconds: session.duration_seconds,
+        offset,
+        onTick: (seg) => {
+          countdownEl.textContent = formatarMMSS(seg);
+          countdownEl.classList.toggle('acabando', seg <= 30);
+        },
+        onFim: () => {
+          congelado = true;
+          enviarFreeze(channel); // trava novas conexões em todos os celulares
+          renderTudo();
+        },
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
