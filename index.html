@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<<<<<<< HEAD
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Conecta MongoDB</title>
@@ -78,6 +79,12 @@
   #finish-screen .card{ text-align:center; max-width:380px; }
   #finish-time{ font-size:2.4rem; font-weight:800; color:var(--teal); margin:10px 0; }
 </style>
+=======
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Conecta Ideias</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+>>>>>>> 45d970c53b621152da7a21b047a05516c3d5fad2
 </head>
 <body>
 
@@ -98,23 +105,89 @@
     <span class="pill">Conecta MongoDB</span>
     <span id="timer">0.0s</span>
   </div>
+<<<<<<< HEAD
   <div id="board">
     <svg id="wires"></svg>
     <div class="col col-q" id="col-questions"></div>
     <div class="col col-a" id="col-answers"></div>
+=======
+
+  <div id="tela-jogo" class="tela tela-jogo">
+    <div class="barra-topo">
+      <div><span class="cifra-label">Sessão</span><span id="countdown-sessao" class="cifra">--:--</span></div>
+      <div><span class="cifra-label">Seu tempo</span><span id="cronometro-pessoal" class="cifra">00:00</span></div>
+    </div>
+    <div class="barra-progresso-fundo"><div id="barra-progresso" class="barra-progresso"></div></div>
+
+    <div id="tabuleiro" class="tabuleiro">
+      <svg class="cerebro-fundo" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path class="cerebro-contorno" d="M60 130 Q30 120 32 90 Q20 78 34 58 Q30 36 58 28 Q70 10 100 14 Q120 4 140 16 L140 170 Q120 182 96 178 Q70 184 56 168 Q38 168 34 150 Q44 140 60 130 Z" />
+        <path class="cerebro-contorno" d="M240 130 Q270 120 268 90 Q280 78 266 58 Q270 36 242 28 Q230 10 200 14 Q180 4 160 16 L160 170 Q180 182 204 178 Q230 184 244 168 Q262 168 266 150 Q256 140 240 130 Z" />
+        <line class="cerebro-fenda" x1="150" y1="14" x2="150" y2="176" />
+        <path class="cerebro-dobra" d="M50 60 Q65 70 55 85 Q75 95 65 110" />
+        <path class="cerebro-dobra" d="M100 30 Q115 45 105 60 Q120 75 110 90" />
+        <path class="cerebro-dobra" d="M250 60 Q235 70 245 85 Q225 95 235 110" />
+        <path class="cerebro-dobra" d="M200 30 Q185 45 195 60 Q180 75 190 90" />
+        <path class="cerebro-tronco" d="M138 172 Q150 200 162 172" />
+      </svg>
+      <svg id="svg-fios"></svg>
+      <div id="tabuleiro-chao" class="tabuleiro-chao"></div>
+      <p id="dica-mundo" class="dica-mundo">Toque numa pergunta e depois na resposta certa — role a tela se precisar</p>
+      <div id="mascote" class="mascote" data-estado="parado" aria-hidden="true">
+        <svg class="mascote-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="sombra" cx="32" cy="56" rx="15" ry="4" />
+          <g class="corpo">
+            <ellipse class="cabeca cabeca-parado" cx="32" cy="34" rx="17" ry="16" />
+            <g class="rosto rosto-parado">
+              <circle class="olho" cx="26" cy="32" r="2.6" />
+              <circle class="olho" cx="38" cy="32" r="2.6" />
+              <path class="boca" d="M26 42 Q32 45 38 42" />
+            </g>
+            <g class="rosto rosto-acerto">
+              <path class="olho-feliz" d="M22 30 L27 33 L22 35" />
+              <path class="olho-feliz" d="M42 30 L37 33 L42 35" />
+              <path class="boca boca-feliz" d="M24 41 Q32 49 40 41" />
+              <line class="raio" x1="14" y1="18" x2="10" y2="12" />
+              <line class="raio" x1="50" y1="18" x2="54" y2="12" />
+              <line class="raio" x1="32" y1="10" x2="32" y2="3" />
+            </g>
+            <g class="rosto rosto-erro">
+              <path class="olho-erro" d="M22 29 L28 35 M28 29 L22 35" />
+              <path class="olho-erro" d="M36 29 L42 35 M42 29 L36 35" />
+              <path class="boca" d="M25 44 Q32 39 39 44" />
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+>>>>>>> 45d970c53b621152da7a21b047a05516c3d5fad2
   </div>
   <div id="progress-label">0 / 0 ligados</div>
 </div>
 
+<<<<<<< HEAD
 <!-- Tela 3: fim -->
 <div id="finish-screen" class="center-screen hidden">
   <div class="card">
     <span class="pill">🏁 Terminou!</span>
     <div id="finish-time">0.0s</div>
     <p style="color:var(--text-dim);">Confere o pódio no telão.</p>
+=======
+  <div id="tela-fim" class="tela">
+    <h2>Cérebro completo</h2>
+    <p class="cifra cifra-fim" id="tempo-final-texto">00:00</p>
+    <p class="marca">Confere o ranking no telão</p>
+>>>>>>> 45d970c53b621152da7a21b047a05516c3d5fad2
   </div>
 </div>
 
+<<<<<<< HEAD
 <script type="module" src="js/player.js"></script>
+=======
+  <script type="module">
+    import { iniciarJogo } from '/src/jogador.js';
+    iniciarJogo();
+  </script>
+>>>>>>> 45d970c53b621152da7a21b047a05516c3d5fad2
 </body>
 </html>

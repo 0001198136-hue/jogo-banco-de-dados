@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conecta Ideias — Projetor</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body class="projetor">
+  <svg class="cerebro-fundo cerebro-turma" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path class="cerebro-contorno" d="M60 130 Q30 120 32 90 Q20 78 34 58 Q30 36 58 28 Q70 10 100 14 Q120 4 140 16 L140 170 Q120 182 96 178 Q70 184 56 168 Q38 168 34 150 Q44 140 60 130 Z" />
+    <path class="cerebro-contorno" d="M240 130 Q270 120 268 90 Q280 78 266 58 Q270 36 242 28 Q230 10 200 14 Q180 4 160 16 L160 170 Q180 182 204 178 Q230 184 244 168 Q262 168 266 150 Q256 140 240 130 Z" />
+    <line class="cerebro-fenda" x1="150" y1="14" x2="150" y2="176" />
+    <path class="cerebro-dobra" d="M50 60 Q65 70 55 85 Q75 95 65 110" />
+    <path class="cerebro-dobra" d="M100 30 Q115 45 105 60 Q120 75 110 90" />
+    <path class="cerebro-dobra" d="M250 60 Q235 70 245 85 Q225 95 235 110" />
+    <path class="cerebro-dobra" d="M200 30 Q185 45 195 60 Q180 75 190 90" />
+    <path class="cerebro-tronco" d="M138 172 Q150 200 162 172" />
+  </svg>
+
+  <div class="projetor-topo">
+    <h1 id="titulo-projetor">Conecta Ideias — aguardando início</h1>
+    <div id="countdown-sessao" class="projetor-countdown">--:--</div>
+  </div>
+
+  <div class="projetor-corpo">
+    <div id="grid-cerebros" class="grid-cerebros"></div>
+    <div class="painel-ranking">
+      <h2>Ranking</h2>
+      <ul id="ranking-lista"></ul>
+    </div>
+  </div>
+
+  <script type="module" src="/src/projetor.js"></script>
+</body>
+</html>
