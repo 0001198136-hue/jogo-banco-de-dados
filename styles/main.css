@@ -136,17 +136,23 @@ button, input {
 #mundo {
   position: relative;
   flex: 1;
-  min-height: 0;
+  /* SEM min-height:0 de propósito: um item flex com min-height:0 pode ser
+     espremido menor que o próprio conteúdo (era isso que empilhava balão
+     em cima de balão com muita pergunta). Sem essa linha, o conteúdo das
+     duas colunas empurra a altura pra cima, e a página passa a rolar
+     naturalmente — sem nenhuma conta de posição em JS. */
   width: 100%;
-  overflow: hidden;
   background-image: radial-gradient(circle, rgba(78, 234, 255, 0.14) 1px, transparent 1.5px);
   background-size: 28px 28px;
 }
 
-/* mundo estático: cérebro no centro, perguntas/respostas espalhadas em
-   círculo ao redor (posicionadas via JS, ver posicionarCirculo em game.js,
-   com distância de arco igual pra não ficar espremido perto do topo/base).
-   o boneco fica parado no centro, só reage com poses (acerto/erro). */
+/* mundo: cérebro no centro (um pouco encoberto pelas colunas, de propósito
+   — ele é decorativo), perguntas numa coluna à esquerda e respostas+decoys
+   numa coluna à direita (cada hemisfério do cérebro tem a sua). Cada balão
+   ocupa a altura que o texto pedir — sem truncar e sem diminuir fonte — e
+   se a lista for longa, a PÁGINA cresce e passa a rolar (a barra do topo é
+   sticky, o cronômetro continua visível). O boneco fica no meio do vão
+   entre as colunas, só reage com poses (acerto/erro). */
 
 .cerebro-fundo {
   position: absolute;
@@ -197,44 +203,57 @@ button, input {
 }
 
 .dica-mundo {
-  position: absolute;
+  /* fixed (não absolute): o "mundo" agora pode ficar mais alto que a tela
+     e rolar — se isso ficasse relativo ao #mundo, a dica nasceria lá
+     embaixo, fora da área visível inicial. */
+  position: fixed;
   bottom: 14px;
   left: 50%;
   z-index: 6;
   transform: translateX(-50%);
-  font-size: 0.78rem;
+  width: max-content;
+  max-width: min(88vw, 360px);
+  text-align: center;
+  font-size: 0.76rem;
   color: var(--texto-fraco);
-  background: rgba(10, 14, 23, 0.8);
-  padding: 6px 14px;
-  border-radius: 999px;
+  background: rgba(10, 14, 23, 0.85);
+  padding: 8px 16px;
+  border-radius: 16px;
   border: 1px solid var(--surface-border);
-  white-space: nowrap;
   transition: opacity 0.6s ease;
   pointer-events: none;
 }
 .dica-mundo.escondida { opacity: 0; }
 
 .mundo-chao {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  /* padding-bottom maior: sobra espaço embaixo pra não colidir com a
+     dica fixa (position:fixed) que fica grudada no rodapé da tela. */
+  padding: 22px 10px 96px;
 }
+.coluna-neuronios {
+  flex: 1 1 0;
+  min-width: 0; /* permite o filho encolher/quebrar linha dentro da coluna */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.coluna-perguntas { align-items: flex-start; }
+.coluna-respostas { align-items: flex-end; }
+
 .mundo-chao .neuronio {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 96px;
-  height: 52px;
-  padding: 5px 8px 5px 18px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  position: relative;
+  max-width: 94%;
+  padding: 10px 14px 10px 24px;
   text-align: left;
-  font-size: 0.64rem;
-  line-height: 1.15;
-  /* left/top são setados via JS (posicionarCirculo) como o CENTRO do nó */
-  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .mascote-mundo {
@@ -502,6 +521,4 @@ body.projetor {
 
 @media (max-width: 720px) {
   .projetor-corpo { grid-template-columns: 1fr; }
-  #brain { gap: 6vw; }
-  .neuronio { font-size: 0.75rem; padding: 10px 10px; }
 }

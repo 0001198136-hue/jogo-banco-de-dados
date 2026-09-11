@@ -1,6 +1,7 @@
 import { supabase, buscarSessaoAtiva } from './supabaseClient.js';
 import {
-  abrirCanalSessao,
+  criarCanalSessao,
+  inscreverCanal,
   enviarProgresso,
   enviarFinalizado,
   onFreeze,
@@ -106,78 +107,40 @@ async function esperarSessaoComecar(sessionId) {
   });
 }
 
+// Perguntas na coluna da esquerda, respostas (certas + decoys) na da
+// direita — cada uma no seu "hemisfério" do cérebro. Cada coluna é fluxo
+// normal de CSS (sem position:absolute nem conta de ângulo/elipse): o
+// balão fica do tamanho que o texto pedir, sem truncar, e a lista cresce
+// pra baixo naturalmente — nada de posição calculada em JS.
 function renderizarMundo({ perguntas, pool }) {
   const chao = $('#mundo-chao');
   chao.innerHTML = '';
 
-  const nos = embaralhar([
-    ...perguntas.map((p) => ({ role: 'pergunta', id: p.id, texto: p.conceito })),
-    ...pool.map((r) => ({ role: 'resposta', id: r.id, texto: r.texto })),
-  ]);
+  const colunaPerguntas = document.createElement('div');
+  colunaPerguntas.className = 'coluna-neuronios coluna-perguntas';
+  const colunaRespostas = document.createElement('div');
+  colunaRespostas.className = 'coluna-neuronios coluna-respostas';
 
-  nos.forEach((no) => {
-    const el = document.createElement(no.role === 'pergunta' ? 'button' : 'div');
-    if (no.role === 'pergunta') el.type = 'button';
+  embaralhar(perguntas).forEach((p) => {
+    const el = document.createElement('button');
+    el.type = 'button';
     el.className = 'neuronio';
-    el.dataset.id = no.id;
-    el.dataset.role = no.role;
-    el.textContent = no.texto;
-    chao.appendChild(el);
+    el.dataset.id = p.id;
+    el.dataset.role = 'pergunta';
+    el.textContent = p.conceito;
+    colunaPerguntas.appendChild(el);
   });
-}
 
-// Espalha os nós numa elipse ao redor do cérebro, todos visíveis de uma
-// vez (sem scroll). Usa distância de arco igual entre os nós (em vez de
-// ângulo igual) pra eles não ficarem espremidos no topo/embaixo — numa
-// elipse, ângulos iguais NÃO viram distâncias iguais na tela.
-function distanciasIguaisNaElipse(total, rx, ry, anguloInicial) {
-  const passos = 720;
-  const angulos = new Array(passos + 1);
-  const comprimento = new Array(passos + 1);
-  comprimento[0] = 0;
-  angulos[0] = anguloInicial;
-  for (let i = 1; i <= passos; i++) {
-    const t0 = anguloInicial + ((i - 1) / passos) * Math.PI * 2;
-    const t1 = anguloInicial + (i / passos) * Math.PI * 2;
-    const dx = rx * (Math.cos(t1) - Math.cos(t0));
-    const dy = ry * (Math.sin(t1) - Math.sin(t0));
-    angulos[i] = t1;
-    comprimento[i] = comprimento[i - 1] + Math.hypot(dx, dy);
-  }
-  const total_comprimento = comprimento[passos];
-
-  const resultado = [];
-  let ponteiro = 0;
-  for (let i = 0; i < total; i++) {
-    const alvo = (i / total) * total_comprimento;
-    while (ponteiro < passos && comprimento[ponteiro] < alvo) ponteiro++;
-    resultado.push(angulos[ponteiro]);
-  }
-  return resultado;
-}
-
-function posicionarCirculo(mundoEl) {
-  const nos = Array.from(mundoEl.querySelectorAll('.neuronio'));
-  const rect = mundoEl.getBoundingClientRect();
-  const cx = rect.width / 2;
-  const cy = rect.height / 2;
-
-  const margem = 6;
-  const nodeW = 96;
-  const nodeH = 52;
-  const rx = Math.max(cx - nodeW / 2 - margem, 60);
-  const ry = Math.max(cy - nodeH / 2 - margem, 60);
-
-  const anguloInicial = -Math.PI / 2; // começa no topo
-  const angulos = distanciasIguaisNaElipse(nos.length, rx, ry, anguloInicial);
-
-  nos.forEach((el, i) => {
-    const angulo = angulos[i];
-    const x = cx + rx * Math.cos(angulo);
-    const y = cy + ry * Math.sin(angulo);
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+  embaralhar(pool).forEach((r) => {
+    const el = document.createElement('div');
+    el.className = 'neuronio';
+    el.dataset.id = r.id;
+    el.dataset.role = 'resposta';
+    el.textContent = r.texto;
+    colunaRespostas.appendChild(el);
   });
+
+  chao.append(colunaPerguntas, colunaRespostas);
 }
 
 export async function iniciarJogo() {
@@ -198,13 +161,15 @@ export async function iniciarJogo() {
 
   const offset = await calcularOffset();
   const startedAtMs = new Date(sessaoIniciada.started_at).getTime();
-  const channel = abrirCanalSessao(session.id);
-  await pedirWakeLock();
 
-  mostrarTela('jogo');
-
+  // onFreeze precisa ser registrado ANTES de inscreverCanal — ver nota em realtime.js
+  const channel = criarCanalSessao(session.id);
   let congelado = false;
   onFreeze(channel, () => { congelado = true; });
+  inscreverCanal(channel);
+
+  await pedirWakeLock();
+  mostrarTela('jogo');
 
   const pool = montarPool(perguntas, decoys);
   renderizarMundo({ perguntas, pool });
@@ -215,8 +180,6 @@ export async function iniciarJogo() {
   const mascoteEl = $('#mascote');
   const cerebroEl = $('.cerebro-fundo');
   const dicaEl = $('#dica-mundo');
-
-  posicionarCirculo(mundoEl);
 
   function esconderDica() { dicaEl?.classList.add('escondida'); }
   setTimeout(esconderDica, 6000);

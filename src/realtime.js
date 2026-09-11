@@ -1,14 +1,25 @@
 import { supabase } from './supabaseClient.js';
 
 /**
- * Abre (ou reaproveita) o canal broadcast da sessão.
+ * Cria o canal broadcast da sessão (ainda SEM se inscrever).
  * `self: false` porque cada client só precisa ouvir os outros —
  * ele já sabe o próprio estado localmente.
+ *
+ * IMPORTANTE: o Supabase Realtime só entrega broadcast pra handlers
+ * registrados com .on(...) ANTES do .subscribe(). Handler registrado
+ * depois do subscribe fica "surdo" — foi exatamente isso que fazia a
+ * contagem de acertos nunca chegar no telão. Por isso a criação do
+ * canal foi separada da inscrição: primeiro criarCanalSessao(), depois
+ * TODOS os onProgresso/onFinalizado/onFreeze, só então inscreverCanal().
  */
-export function abrirCanalSessao(sessionId) {
-  const channel = supabase.channel(`session:${sessionId}`, {
+export function criarCanalSessao(sessionId) {
+  return supabase.channel(`session:${sessionId}`, {
     config: { broadcast: { self: false } },
   });
+}
+
+/** Chamar por último, depois de registrar todos os .on() do canal. */
+export function inscreverCanal(channel) {
   channel.subscribe();
   return channel;
 }
