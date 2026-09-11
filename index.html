@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Conecta Ideias</title>
   <link rel="stylesheet" href="/styles/main.css" />
 </head>
@@ -28,13 +28,14 @@
     <p class="marca">Deixa essa tela aberta, ela começa sozinha</p>
   </div>
 
-  <div id="tela-jogo" class="tela" style="padding:0; justify-content:flex-start;">
+  <div id="tela-jogo" class="tela tela-jogo">
     <div class="barra-topo">
       <div><span class="cifra-label">Sessão</span><span id="countdown-sessao" class="cifra">--:--</span></div>
       <div><span class="cifra-label">Seu tempo</span><span id="cronometro-pessoal" class="cifra">00:00</span></div>
     </div>
     <div class="barra-progresso-fundo"><div id="barra-progresso" class="barra-progresso"></div></div>
-    <div id="mundo" class="mundo">
+
+    <div id="tabuleiro" class="tabuleiro">
       <svg class="cerebro-fundo" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path class="cerebro-contorno" d="M60 130 Q30 120 32 90 Q20 78 34 58 Q30 36 58 28 Q70 10 100 14 Q120 4 140 16 L140 170 Q120 182 96 178 Q70 184 56 168 Q38 168 34 150 Q44 140 60 130 Z" />
         <path class="cerebro-contorno" d="M240 130 Q270 120 268 90 Q280 78 266 58 Q270 36 242 28 Q230 10 200 14 Q180 4 160 16 L160 170 Q180 182 204 178 Q230 184 244 168 Q262 168 266 150 Q256 140 240 130 Z" />
@@ -46,33 +47,30 @@
         <path class="cerebro-tronco" d="M138 172 Q150 200 162 172" />
       </svg>
       <svg id="svg-fios"></svg>
-      <div id="mundo-chao" class="mundo-chao"></div>
+      <div id="tabuleiro-chao" class="tabuleiro-chao"></div>
       <p id="dica-mundo" class="dica-mundo">Toque numa pergunta e depois na resposta certa — role a tela se precisar</p>
-      <div id="mascote" class="mascote mascote-mundo" data-estado="parado" aria-hidden="true">
+      <div id="mascote" class="mascote" data-estado="parado" aria-hidden="true">
         <svg class="mascote-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="sombra" cx="32" cy="56" rx="15" ry="4" />
           <g class="corpo">
-            <ellipse class="sombra" cx="32" cy="54" rx="14" ry="4" />
-            <line class="perna" x1="24" y1="44" x2="19" y2="56" />
-            <line class="perna" x1="40" y1="44" x2="45" y2="56" />
+            <ellipse class="cabeca cabeca-parado" cx="32" cy="34" rx="17" ry="16" />
             <g class="rosto rosto-parado">
-              <ellipse class="cabeca" cx="32" cy="32" rx="16" ry="15" />
-              <circle class="olho" cx="26" cy="30" r="2.6" />
-              <circle class="olho" cx="38" cy="30" r="2.6" />
-              <path class="boca" d="M26 40 Q32 43 38 40" />
+              <circle class="olho" cx="26" cy="32" r="2.6" />
+              <circle class="olho" cx="38" cy="32" r="2.6" />
+              <path class="boca" d="M26 42 Q32 45 38 42" />
             </g>
             <g class="rosto rosto-acerto">
-              <ellipse class="cabeca cabeca-feliz" cx="32" cy="32" rx="16" ry="15" />
-              <path class="olho-feliz" d="M23 28 L27 30 L23 32" />
-              <path class="olho-feliz" d="M41 28 L37 30 L41 32" />
-              <path class="boca boca-feliz" d="M25 39 Q32 46 39 39" />
-              <line class="raio" x1="18" y1="20" x2="14" y2="14" />
-              <line class="raio" x1="46" y1="18" x2="50" y2="12" />
+              <path class="olho-feliz" d="M22 30 L27 33 L22 35" />
+              <path class="olho-feliz" d="M42 30 L37 33 L42 35" />
+              <path class="boca boca-feliz" d="M24 41 Q32 49 40 41" />
+              <line class="raio" x1="14" y1="18" x2="10" y2="12" />
+              <line class="raio" x1="50" y1="18" x2="54" y2="12" />
+              <line class="raio" x1="32" y1="10" x2="32" y2="3" />
             </g>
             <g class="rosto rosto-erro">
-              <ellipse class="cabeca cabeca-erro" cx="32" cy="32" rx="16" ry="15" />
-              <path class="olho-erro" d="M23 27 L29 33 M29 27 L23 33" />
-              <path class="olho-erro" d="M35 27 L41 33 M41 27 L35 33" />
-              <path class="boca" d="M26 41 Q32 37 38 41" />
+              <path class="olho-erro" d="M22 29 L28 35 M28 29 L22 35" />
+              <path class="olho-erro" d="M36 29 L42 35 M42 29 L36 35" />
+              <path class="boca" d="M25 44 Q32 39 39 44" />
             </g>
           </g>
         </svg>
@@ -82,12 +80,12 @@
 
   <div id="tela-fim" class="tela">
     <h2>Cérebro completo</h2>
-    <p class="cifra" id="tempo-final-texto">00:00</p>
+    <p class="cifra cifra-fim" id="tempo-final-texto">00:00</p>
     <p class="marca">Confere o ranking no telão</p>
   </div>
 
   <script type="module">
-    import { iniciarJogo } from '/src/game.js';
+    import { iniciarJogo } from '/src/jogador.js';
     iniciarJogo();
   </script>
 </body>

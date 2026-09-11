@@ -1,16 +1,17 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-// Vite só builda index.html por padrão. Como o projeto tem 3 páginas
-// (jogador, projetor, admin), cada uma precisa ser um entry point aqui —
-// senão o `vite build` gera só o index.html e as outras somem no deploy.
+// O Vite só builda index.html por padrão. Como o projeto tem 3 páginas
+// (jogador, admin, projetor), cada uma precisa aparecer aqui como entry
+// point — senão o `npm run build` gera só a raiz e as outras duas somem
+// no deploy da Vercel (ficam 404).
 export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        projetor: resolve(__dirname, 'projetor.html'),
+        jogador: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
+        projetor: resolve(__dirname, 'projetor.html'),
       },
     },
   },
