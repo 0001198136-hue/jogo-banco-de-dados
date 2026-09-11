@@ -291,10 +291,12 @@ button, input {
 .neuronio[data-role="pergunta"] {
   text-align: left;
   border-color: rgba(78, 234, 255, 0.4);
-  /* essencial pro arraste no celular: sem isso o navegador rouba o
-     gesto pra rolar a página antes do pointerdown/preventDefault agir. */
-  touch-action: none;
-  cursor: grab;
+  /* SEM touch-action:none aqui de propósito: a conexão agora é só por
+     toque (ver src/game.js), então o navegador precisa continuar livre
+     pra rolar a página normalmente enquanto o dedo passa por cima de
+     uma pergunta. touch-action:none travava a rolagem inteira da tela
+     durante o toque, o que impedia alcançar respostas fora da área
+     visível — esse era o bug raiz que travava o jogo. */
 }
 .neuronio[data-role="pergunta"]::before { background: var(--sinapse); box-shadow: 0 0 6px var(--sinapse); }
 .neuronio[data-role="resposta"] { text-align: left; border-color: rgba(124, 92, 252, 0.4); }

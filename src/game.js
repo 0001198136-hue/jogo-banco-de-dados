@@ -12,7 +12,6 @@ import {
   criarCronometroJogador,
   formatarMMSS,
 } from './timer.js';
-import { criarSistemaDrag } from './pointerDrag.js';
 const $ = (sel) => document.querySelector(sel);
 
 const telas = {
@@ -287,24 +286,15 @@ export async function iniciarJogo() {
     }
   }
 
-  // Arrastar o fio de verdade: pointerdown numa pergunta começa o traço,
-  // que segue o dedo/mouse até soltar em cima de uma resposta. O sistema
-  // já existia pronto (pointerDrag.js) mas nunca era chamado — era isso
-  // que fazia os fios não ligarem ao arrastar.
-  const sistemaDrag = criarSistemaDrag({
-    container: mundoEl,
-    svg,
-    onConectar,
-    estaCongelado: () => congelado,
-  });
-
-  $('#mundo-chao').querySelectorAll('.neuronio[data-role="pergunta"]').forEach((el) => {
-    el.addEventListener('pointerdown', sistemaDrag.iniciar(el, el.dataset.id));
-  });
-
-  // Seleção por toque: escolhe uma pergunta, depois toca na resposta pra ligar.
-  // Fica como alternativa ao arraste — toque simples (sem mover o dedo) não
-  // dispara o drag, então as duas formas convivem sem conflito.
+  // Conexão por toque: escolhe uma pergunta, depois toca na resposta pra
+  // ligar. É o único método de conexão agora — o arraste (pointerDrag.js)
+  // foi desativado porque dependia de touch-action:none na pergunta, o que
+  // travava a rolagem da tela inteira enquanto o dedo ficava em contato.
+  // Com duas colunas mais altas que a tela, isso tornava impossível chegar
+  // em respostas fora da área visível: dava pra segurar o fio ou rolar a
+  // tela, nunca as duas coisas ao mesmo tempo. Tocar em vez de arrastar
+  // não tem esse problema, porque nada trava a rolagem entre um toque e
+  // outro.
   let selecionada = null;
 
   function limparSelecao() {

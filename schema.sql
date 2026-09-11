@@ -30,6 +30,12 @@ alter table players enable row level security;
 create policy "leitura publica sessions" on sessions
   for select using (true);
 
+create policy "insert publico sessions" on sessions
+  for insert with check (true);
+
+create policy "update publico sessions" on sessions
+  for update using (true);
+
 create policy "leitura publica players" on players
   for select using (true);
 
